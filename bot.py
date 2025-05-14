@@ -1,3 +1,8 @@
+import asyncio
+asyncio.get_event_loop().run_until_complete(
+    telegram_app.bot.set_webhook(f"{APP_URL}/{BOT_TOKEN}")
+)
+
 import os
 import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -149,5 +154,8 @@ async def main():
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    telegram_app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        webhook_url=f"{APP_URL}/{BOT_TOKEN}"
+    )
