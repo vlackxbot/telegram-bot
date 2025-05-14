@@ -17,7 +17,7 @@ from telegram.ext import (
 )
 
 # Replace with your actual bot token
-BOT_TOKEN = "8148462890:AAGwW8GFMhQSzbSUO2CQHQ7VOX9ORc3dv4U"
+BOT_TOKEN = "BOT_TOKEN"
 
 # List of your channel usernames
 CHANNELS = ['@marcoshots', '@marcoshotpot', '@earnyvlackyo', '@giftcodedaily100', '@jiyajishots', '@aarohiloots']
