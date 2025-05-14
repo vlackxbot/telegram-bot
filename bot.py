@@ -1,6 +1,5 @@
 import os
 import random
-from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -12,24 +11,18 @@ from telegram.ext import (
 )
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-APP_URL = os.getenv("APP_URL")  # eg. https://your-app.onrender.com
+APP_URL = os.getenv("APP_URL")  # e.g., https://your-app.onrender.com
 
 CHANNELS = ['@marcoshots', '@marcoshotpot', '@earnyvlackyo', '@giftcodedaily100', '@jiyajishots', '@aarohiloots']
 user_data = {}
-
-app = Flask(__name__)
-telegram_app = Application.builder().token(BOT_TOKEN).build()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     chat_id = update.effective_chat.id
 
     with open('front.png', 'rb') as photo:
-        await context.bot.send_photo(
-            chat_id=chat_id,
-            photo=photo,
-            caption="👋 Welcome! Join all channels below to get ₹100 Paytm cash."
-        )
+        await context.bot.send_photo(chat_id=chat_id, photo=photo,
+                                     caption="👋 Welcome! Join all channels below to get ₹100 Paytm cash.")
 
     with open('voice.ogg', 'rb') as voice:
         await context.bot.send_voice(chat_id=chat_id, voice=voice)
@@ -44,21 +37,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("✅ VERIFY ✅", callback_data="verify")]
     ]
 
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text="Please join all the above channels and then click 'I've Joined All'.",
-        reply_markup=InlineKeyboardMarkup(buttons)
-    )
+    await context.bot.send_message(chat_id=chat_id,
+                                   text="Please join all the above channels and then click 'I've Joined All'.",
+                                   reply_markup=InlineKeyboardMarkup(buttons))
 
 async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     user = query.from_user
     chat_id = query.message.chat.id
-
     not_joined = []
+
     for channel in CHANNELS:
         try:
-            member = await context.bot.get_chat_member(chat_id=channel, user_id=user.id)
+            member = await context.bot.get_chat_member(channel, user.id)
             if member.status not in ["member", "administrator", "creator"]:
                 not_joined.append(channel)
         except:
@@ -85,16 +76,11 @@ async def spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     user = query.from_user
     chat_id = query.message.chat.id
-
     await query.answer("Spinning the wheel...")
+
     amounts = [33, 55]
     won_amount = random.choice(amounts)
-
-    user_data[user.id] = {
-        'balance': won_amount,
-        'referrals': 0,
-        'upi': None
-    }
+    user_data[user.id] = {'balance': won_amount, 'referrals': 0, 'upi': None}
 
     await context.bot.send_message(
         chat_id=chat_id,
@@ -114,24 +100,19 @@ async def withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_info['balance'] >= 100:
         await context.bot.send_message(chat_id=chat_id, text="Please enter your UPI ID for withdrawal.")
     else:
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text=f"Your current balance is ₹{user_info['balance']}.\nRefer more friends to reach ₹100.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📢 Refer Friends", callback_data="refer")]
-            ])
-        )
+        await context.bot.send_message(chat_id=chat_id,
+                                       text=f"Your current balance is ₹{user_info['balance']}.\nRefer more friends.",
+                                       reply_markup=InlineKeyboardMarkup([
+                                           [InlineKeyboardButton("📢 Refer Friends", callback_data="refer")]
+                                       ]))
 
 async def refer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     user = query.from_user
     chat_id = query.message.chat.id
-    referral_link = f"https://t.me/GETUPIINSTANTBOT?start={user.id}"
-
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text=f"Share this link with your friends: {referral_link}\nYou'll earn ₹10 for each referral."
-    )
+    link = f"https://t.me/GETUPIINSTANTBOT?start={user.id}"
+    await context.bot.send_message(chat_id=chat_id,
+                                   text=f"Share this link: {link}\nYou'll earn ₹10 for each referral.")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -142,39 +123,29 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_info = user_data.get(user.id)
         if user_info and user_info['balance'] >= 100:
             user_info['upi'] = text
-            await context.bot.send_message(
-                chat_id=chat_id,
-                text="✅ Your UPI ID has been received. You'll receive ₹100 within 24 hours."
-            )
+            await context.bot.send_message(chat_id=chat_id,
+                                           text="✅ Your UPI ID received. ₹100 will be sent within 24 hrs.")
         else:
-            await context.bot.send_message(chat_id=chat_id, text="You need ₹100 balance to withdraw.")
+            await context.bot.send_message(chat_id=chat_id, text="You need ₹100 to withdraw.")
 
-telegram_app.add_handler(CommandHandler("start", start))
-telegram_app.add_handler(CallbackQueryHandler(verify, pattern="^verify$"))
-telegram_app.add_handler(CallbackQueryHandler(spin, pattern="^spin$"))
-telegram_app.add_handler(CallbackQueryHandler(withdraw, pattern="^withdraw$"))
-telegram_app.add_handler(CallbackQueryHandler(refer, pattern="^refer$"))
-telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+async def main():
+    application = Application.builder().token(BOT_TOKEN).build()
 
-@app.route(f"/{BOT_TOKEN}", methods=["POST"])
-async def webhook():
-    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    await telegram_app.process_update(update)
-    return "ok"
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(verify, pattern="^verify$"))
+    application.add_handler(CallbackQueryHandler(spin, pattern="^spin$"))
+    application.add_handler(CallbackQueryHandler(withdraw, pattern="^withdraw$"))
+    application.add_handler(CallbackQueryHandler(refer, pattern="^refer$"))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-@app.route("/", methods=["GET"])
-def home():
-    return "Bot is live!"
-
-async def set_webhook():
-    webhook_url = f"{APP_URL}/{BOT_TOKEN}"
-    await telegram_app.bot.set_webhook(webhook_url)
+    # Set webhook
+    await application.bot.set_webhook(url=f"{APP_URL}/{BOT_TOKEN}")
+    await application.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        webhook_path=f"/{BOT_TOKEN}"
+    )
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(set_webhook())
-    telegram_app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000)),
-        webhook_url=f"{APP_URL}/{BOT_TOKEN}"
-    )
+    asyncio.run(main())
