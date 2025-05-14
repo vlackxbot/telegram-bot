@@ -140,11 +140,13 @@ async def main():
 
     # Set webhook
     await application.bot.set_webhook(url=f"{APP_URL}/{BOT_TOKEN}")
+
     await application.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", 5000)),
-        webhook_path=f"/{BOT_TOKEN}"
+        webhook_url=f"{APP_URL}/{BOT_TOKEN}"
     )
+
 
 if __name__ == "__main__":
     import asyncio
