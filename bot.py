@@ -1,7 +1,3 @@
-import asyncio
-asyncio.get_event_loop().run_until_complete(
-    telegram_app.bot.set_webhook(f"{APP_URL}/{BOT_TOKEN}")
-)
 import os
 import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
