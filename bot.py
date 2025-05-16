@@ -66,7 +66,7 @@ async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_photo(
             chat_id=chat_id,
             photo=photo,
-            caption="🎯 Spin the wheel to win up to ₹100 Paytm cash!",
+            caption="🎯 Spin the wheel to win up to Rs.100 Paytm cash!",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🎰 Spin Now", callback_data="spin")]
             ])
@@ -84,7 +84,7 @@ async def spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=chat_id,
-        text=f"🎉 Congratulations! You won ₹{won_amount}.\n\nMinimum withdrawal is ₹100. Refer friends to earn more.",
+        text=f"🎉 Congratulations! You won Rs.{won_amount}.\n\nMinimum withdrawal is Rs.100. Refer friends to earn more.",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("💸 Withdraw", callback_data="withdraw")],
             [InlineKeyboardButton("📢 Refer Friends", callback_data="refer")]
@@ -112,7 +112,7 @@ async def refer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.message.chat.id
     link = f"https://t.me/GETUPIINSTANTBOT?start={user.id}"
     await context.bot.send_message(chat_id=chat_id,
-                                   text=f"Share this link: {link}\nYou'll earn ₹10 for each referral.")
+                                   text=f"Share this link: {link}\nYou'll earn Rs. 10 for each referral.")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -124,9 +124,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if user_info and user_info['balance'] >= 100:
             user_info['upi'] = text
             await context.bot.send_message(chat_id=chat_id,
-                                           text="✅ Your UPI ID received. ₹100 will be sent within 24 hrs.")
+                                           text="✅ Your UPI ID received. RS.100 will be sent within 24 hrs.")
         else:
-            await context.bot.send_message(chat_id=chat_id, text="You need ₹100 to withdraw.")
+            await context.bot.send_message(chat_id=chat_id, text="You need Rs.100 to withdraw.")
 
 async def main():
     application = Application.builder().token(BOT_TOKEN).build()
